@@ -83,4 +83,8 @@ dependencies {
 
     // Lottie
     implementation(libs.lottie.compose)
+
+    //compose viewmodel
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
 }
