@@ -8,18 +8,19 @@ import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlin.time.Clock
 
 data class DrawingState(
     val selectedColor: Color=Color.Black,
     val currentPath: PathData?=null,
-    val paths:List<PathData> = emptyList()
+    val paths:List<PathData> = emptyList(),
+    val isEraserSelected:Boolean=false
 )
 
 data class PathData(
     val id:String,
     val color:Color,
-    val path: List<Offset>
+    val path: List<Offset>,
+    val isEraser:Boolean=false
 )
 
 val allColors=listOf<Color>(
@@ -39,6 +40,10 @@ sealed interface DrawingAction{
     data object OnDrawEnd : DrawingAction
     data object OnClearCanvas : DrawingAction
     data class OnSelectColor(val color:Color): DrawingAction
+
+    data object OnEraserSelected: DrawingAction
+
+    data object OnBrushSelected: DrawingAction
 }
 
 @HiltViewModel
@@ -52,8 +57,22 @@ class DrawingViewModel @Inject constructor(): ViewModel() {
             DrawingAction.OnClearCanvas -> onClearCanvas()
             DrawingAction.OnDrawEnd -> onDrawEnd()
             DrawingAction.OnNewPathStart -> onNewPathStart()
+            DrawingAction.OnBrushSelected->onBrushSelected()
+            DrawingAction.OnEraserSelected->onEraserSelected()
             is DrawingAction.OnSelectColor -> onSelectColor(action.color)
         }
+    }
+
+    private fun onEraserSelected() {
+        _state.update { it.copy(
+            isEraserSelected = true
+        ) }
+    }
+
+    private fun onBrushSelected() {
+        _state.update { it.copy(
+            isEraserSelected = false
+        ) }
     }
 
     private fun onSelectColor(color: Color) {
@@ -68,7 +87,8 @@ class DrawingViewModel @Inject constructor(): ViewModel() {
                 currentPath = PathData(
                     id = System.currentTimeMillis().toString(),
                     color = it.selectedColor,
-                    path = emptyList()
+                    path = emptyList(),
+                    isEraser = it.isEraserSelected
                 )
             )
         }

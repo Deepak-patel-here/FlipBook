@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -24,10 +26,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.midnightcoder.animationnotebook.R
 import com.midnightcoder.animationnotebook.presentation.viewmodels.DrawingAction
 import com.midnightcoder.animationnotebook.presentation.viewmodels.DrawingViewModel
 import com.midnightcoder.animationnotebook.presentation.viewmodels.allColors
@@ -70,8 +74,16 @@ fun CanvasScreen(
 
         }
         Spacer(Modifier.height(10.dp))
-        Button(onClick = {drawingViewModel.onAction(DrawingAction.OnClearCanvas)}) {
-            Text("Clear Canvas")
+        Row(modifier = Modifier.fillMaxWidth()) {
+            IconButton(onClick = {drawingViewModel.onAction(DrawingAction.OnEraserSelected)}) {
+                Icon(painter = painterResource(R.drawable.eraser),
+                    contentDescription = null)
+            }
+
+            IconButton(onClick = {drawingViewModel.onAction(DrawingAction.OnBrushSelected)}) {
+                Icon(painter = painterResource(R.drawable.pencil),
+                    contentDescription = null)
+            }
         }
     }
 

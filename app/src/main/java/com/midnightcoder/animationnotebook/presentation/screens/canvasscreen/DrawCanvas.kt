@@ -7,13 +7,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import com.midnightcoder.animationnotebook.presentation.viewmodels.DrawingAction
 import com.midnightcoder.animationnotebook.presentation.viewmodels.PathData
 import kotlin.math.abs
@@ -29,13 +33,14 @@ fun DrawCanvas(
         modifier = modifier
             .clipToBounds()
             .background(Color.White)
-            .pointerInput(true) {
+            .pointerInput(Unit) {
                 detectDragGestures(
                     onDragStart = {
                         onAction(DrawingAction.OnNewPathStart)
                     },
                     onDrag = { change, _ ->
                         onAction(DrawingAction.OnDraw(change.position))
+                        change.consume()
                     },
                     onDragEnd = {
                         onAction(DrawingAction.OnDrawEnd)
@@ -46,25 +51,38 @@ fun DrawCanvas(
                 )
             }
     ) {
-        paths.forEach { pathData->
-            drawPath(
-                path = pathData.path,
-                color = pathData.color
-            )
+        drawIntoCanvas { canvas ->
+            canvas.saveLayer(bounds = Rect(
+                0f,
+                0f,
+                size.width,
+                size.height
+            ),paint = Paint())
+            paths.forEach { pathData->
+                drawPath(
+                    path = pathData.path,
+                    color = pathData.color,
+                    isEraser = pathData.isEraser
+                )
+            }
+
+            currentPath?.let {
+                drawPath(
+                    path = it.path,
+                    color = it.color,
+                    isEraser = it.isEraser
+                )
+            }
+            canvas.restore()
         }
 
-        currentPath?.let {
-            drawPath(
-                path = it.path,
-                color = it.color
-            )
-        }
     }
 }
 
 private fun DrawScope.drawPath(
     path: List<Offset>,
     color: Color,
+    isEraser:Boolean,
     thickness: Float = 10f,
 ) {
 
@@ -81,7 +99,7 @@ private fun DrawScope.drawPath(
                 if(dx >= smoothness || dy >= smoothness) {
                     quadraticTo(
                         x1 = (from.x + to.x) / 2f,
-                        y1 = (from.y + to.y) / 2f,
+                        y1 = (from.y + to.y) / 2f,                                      //for smoothness we have to apply a curve function.
                         x2 = to.x,
                         y2 = to.y
                     )
@@ -94,7 +112,8 @@ private fun DrawScope.drawPath(
 
     drawPath(
         path=smoothPath,
-        color = color,
+        color = if(isEraser)Color.Transparent else color,
+        blendMode = if (isEraser) BlendMode.Clear else BlendMode.SrcOver,
         style = Stroke(
             width = thickness,
             cap = StrokeCap.Round,
