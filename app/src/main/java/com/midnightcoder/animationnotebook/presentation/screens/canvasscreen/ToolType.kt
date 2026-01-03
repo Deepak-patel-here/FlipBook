@@ -1,6 +1,9 @@
 package com.midnightcoder.animationnotebook.presentation.screens.canvasscreen
 
-enum class Tool {
+enum class ToolType {
     BRUSH,
-    ERASER
+    ERASER,
+    LASSO,
+    BUCKET,
+    TEXT
 }
