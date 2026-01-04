@@ -1,6 +1,7 @@
 package com.midnightcoder.animationnotebook.presentation.screens.canvasscreen
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -55,6 +56,7 @@ fun TopToolBar(
 ) {
 
     var showBrushOptions by remember { mutableStateOf(false) }
+    var showEraserOptions by remember {mutableStateOf(false)}
 
 
     val listOfTools = listOf<ToolModel>(
@@ -124,8 +126,13 @@ fun TopToolBar(
                         onClick = tool.onClick,
                         shape = shape,
                         onLongPress = {
-                            if (tool.name == ToolType.BRUSH) {
+                            if (tool.name == ToolType.BRUSH && tool.isSelected) {
                                 showBrushOptions = true
+                                showEraserOptions=false
+                            }
+                            if(tool.name== ToolType.ERASER && tool.isSelected){
+                                showEraserOptions=true
+                                showBrushOptions=false
                             }
                         },
                         modifier = Modifier.weight(1f)
@@ -137,8 +144,9 @@ fun TopToolBar(
             AnimatedVisibility(
                 visible = showBrushOptions,
                 enter = slideInVertically(
+                    animationSpec = tween(250),
                     initialOffsetY = { -it / 2 }
-                ) + fadeIn(),
+                ) + fadeIn(animationSpec = tween(250)),
                 exit = slideOutVertically(
                     targetOffsetY = { -it / 2 }
                 ) + fadeOut()
@@ -154,6 +162,27 @@ fun TopToolBar(
                     onCancel = { showBrushOptions = false }
                 )
             }
+
+        AnimatedVisibility(
+            visible = showEraserOptions,
+            enter = slideInVertically(
+                animationSpec = tween(250),
+                initialOffsetY = { -it / 2 }
+            ) + fadeIn(animationSpec = tween(250)),
+            exit = slideOutVertically(
+                targetOffsetY = { -it / 2 }
+            ) + fadeOut()
+        ) {
+            ToolThicknessCard(
+                initialThickness = initialThickness,
+                onConfirm = { width->
+                    onThicknessChanged(width)
+                    showEraserOptions = false
+                },
+                onCancel = { showEraserOptions = false },
+                title = "Eraser thickness"
+            )
+        }
 
 
 

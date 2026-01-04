@@ -6,9 +6,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.midnightcoder.animationnotebook.presentation.viewmodels.DrawingAction
@@ -20,6 +22,9 @@ fun CanvasScreen(
     modifier: Modifier = Modifier
 ) {
     val state = drawingViewModel.state.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) {
+        drawingViewModel.onAction(DrawingAction.InitBitmap(1080,1920))
+    }
     Column(modifier = modifier.fillMaxSize().background(Color.White),
         horizontalAlignment = Alignment.CenterHorizontally) {
 
@@ -37,13 +42,16 @@ fun CanvasScreen(
             )
 
 
+
         DrawCanvas(
+            selectedTool = state.value.selectedTool,
+            bitmap = state.value.bitmap?.asImageBitmap(),
             paths = state.value.paths,
             currentPath = state.value.currentPath,
             onAction = drawingViewModel::onAction,
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
+                .weight(1f),
         )
     }
 
